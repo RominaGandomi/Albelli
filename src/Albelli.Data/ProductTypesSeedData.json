@@ -1,0 +1,27 @@
+﻿[
+  {
+    "Id": "1",
+    "Name": "PhotoBook",
+    "Width": "19"
+  },
+  {
+    "Id": "2",
+    "Name": "Calendar",
+    "Width": "10"
+  },
+  {
+    "Id": "3",
+    "Name": "Canvas ",
+    "Width": "16"
+  },
+  {
+    "Id": "4",
+    "Name": "Cards",
+    "Width": "4.7"
+  },
+  {
+    "Id": "5",
+    "Name": "mug",
+    "Width": "94"
+  }
+]
