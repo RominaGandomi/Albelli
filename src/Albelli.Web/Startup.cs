@@ -1,4 +1,5 @@
 using Albelli.Business.Helper;
+using Albelli.Business.Models;
 using Albelli.Business.Services;
 using Albelli.Business.Services.Interfaces;
 using Albelli.Data;
@@ -45,10 +46,9 @@ namespace Albelli.Web
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Albelli.Web", Version = "v1" });
             });
-
             services.AddDbContext<AlbelliDbContext>(
             options => options
-            .UseSqlServer("Data Source=localhost\\SQLEXPRESS;Initial Catalog=Albelli;Integrated Security=SSPI;")
+            .UseSqlServer(Configuration.GetConnectionString("Albelli"))
             , ServiceLifetime.Transient);
 
 
@@ -99,18 +99,22 @@ namespace Albelli.Web
                 var context = serviceScope.ServiceProvider.GetRequiredService<AlbelliDbContext>();
                 context.Database.Migrate();
 
-                //Insert Seed Data
-                if (context.ProductType.Count() == 0)
-                {
-                    var model = new List<ProductType>();
-                    model.Add(new ProductType() { Name = "photoBook", Width = 19 });
-                    model.Add(new ProductType() { Name = "calendar", Width = 10 });
-                    model.Add(new ProductType() { Name = "canvas", Width = 16 });
-                    model.Add(new ProductType() { Name = "cards", Width = 4.7 });
-                    model.Add(new ProductType() { Name = "mug", Width = 94 });
-                    context.AddRange(model);
-                    context.SaveChanges();
-                }
+                InsertSeedData(context);
+            }
+        }
+
+        public void InsertSeedData(AlbelliDbContext context)
+        {
+            if (context.ProductType.Count() == 0)
+            {
+                var model = new List<ProductType>();
+                model.Add(new ProductType() { Name = ProductCategory.Photobook.ToString(), Width = 19 });
+                model.Add(new ProductType() { Name = ProductCategory.Calendar.ToString(), Width = 10 });
+                model.Add(new ProductType() { Name = ProductCategory.Canvas.ToString(), Width = 16 });
+                model.Add(new ProductType() { Name = ProductCategory.Cards.ToString(), Width = 4.7 });
+                model.Add(new ProductType() { Name = ProductCategory.Mug.ToString(), Width = 94 });
+                context.AddRange(model);
+                context.SaveChanges();
             }
         }
     }

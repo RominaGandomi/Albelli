@@ -10,29 +10,6 @@ namespace Albelli.Business.Helper
 {
     public static class OrderHelper
     {
-        public static double CalculateBinWidth(SubmitOrderInput model, List<ProductTypeModel> products)
-        {
-            var width = 0.0;
-            try
-            {
-                for (int i = 0; i < model.Items.Count; i++)
-                {
-                    var product = products.FirstOrDefault(x => x.Name == NameBuilder(model.Items[i].Product));
-                    if (product == null)
-                        continue;
-
-                    width += NameBuilder(model.Items[i].Product) == "mug" ?
-                        (Math.Ceiling(model.Items[i].Quantity / 4.0) * product.Width)
-                        :
-                         (model.Items[i].Quantity * product.Width);
-                }
-                return width;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
 
         public static string NameBuilder(string name)
         {

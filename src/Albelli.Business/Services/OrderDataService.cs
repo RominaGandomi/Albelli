@@ -1,4 +1,5 @@
 ﻿using Albelli.Business.Models;
+using Albelli.Business.Models.Dto;
 using Albelli.Business.Services.Interfaces;
 using Albelli.Data.Entities;
 using Albelli.Data.Interfaces.Services;
@@ -26,41 +27,79 @@ namespace Albelli.Business.Services
             _orderItemService = orderItemService;
             _productTypeService = productTypeService;
         }
-        public OrderModel GetOrder(int orderId)
+        public async Task<GetOrderOutput> GetOrder(int orderId)
         {
-            var order = _orderService.Find(x => x.Id == orderId);
-            if (order == null)
-                return null;
-            var mappedModel = _mapper.Map<OrderModel>(order);
-            var details = _orderItemService.GetAllIncluding(x => x.ProductType).Where(x => x.OrderId == order.Id);
-            mappedModel.Items = _mapper.Map<List<OrderItemModel>>(details);
+            try
+            {
+                var order = await _orderService.FindAsync(x => x.Id == orderId);
+                var items = _orderItemService.GetAllIncluding(x => x.ProductType).Where(x=>x.OrderId==order.Id);
+                
+                foreach (var item in items)
+                    order.Items.Add(item);
 
-            return mappedModel;
-
+                var model = _mapper.Map<GetOrderOutput>(order);
+                return model;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
-        public List<ProductTypeModel> GetProductTypes()
+        public async Task<List<ProductTypeModel>> GetProductTypes()
         {
-            var products = _productTypeService.GetAll().ToList();
-            var mappedModel = _mapper.Map<List<ProductTypeModel>>(products);
-            return mappedModel;
-        }
-        public OrderModel SaveOrder(OrderModel model)
-        {
-            var mappedOrder = _mapper.Map<Order>(model);
-            var order = _orderService.Add(mappedOrder);
-            _orderService.Save();
-            model.Id = order.Id;
-            return model;
-        }
-        public bool SaveOrderItems(List<OrderItemModel> model)
-        {
-            var mappedOrder = _mapper.Map<List<OrderItem>>(model);
+            try
+            {
+                var products = await _productTypeService.GetAllAsync();
 
-            for (int i = 0; i < mappedOrder.Count; i++)
-                _orderItemService.Add(mappedOrder[i]);
+                var mappedModel = new List<ProductTypeModel>();
 
-            _orderItemService.Save();
-            return true;
+                foreach (var item in products)
+                {
+                    switch (Enum.Parse(typeof(ProductCategory), item.Name))
+                    {
+                        case ProductCategory.Mug:
+                            mappedModel.Add(new Mug() { Id = item.Id, Name = item.Name, Width = item.Width });
+                            break;
+                        case ProductCategory.Cards:
+                            mappedModel.Add(new Cards() { Id = item.Id, Name = item.Name, Width = item.Width });
+                            break;
+                        case ProductCategory.Canvas:
+                            mappedModel.Add(new Canvas() { Id = item.Id, Name = item.Name, Width = item.Width });
+                            break;
+                        case ProductCategory.Calendar:
+                            mappedModel.Add(new Calendar() { Id = item.Id, Name = item.Name, Width = item.Width });
+                            break;
+                        case ProductCategory.Photobook:
+                            mappedModel.Add(new PhotoBook() { Id = item.Id, Name = item.Name, Width = item.Width });
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                return mappedModel;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+        public async Task<OrderModel> SaveOrder(OrderModel model)
+        {
+            try
+            {
+                var mappedOrder = _mapper.Map<Order>(model);
+                var order = await _orderService.AddAsync(mappedOrder);
+                await _orderService.SaveAsync();
+
+                model.Id = order.Id;
+                return model;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

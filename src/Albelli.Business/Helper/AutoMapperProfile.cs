@@ -23,8 +23,8 @@ namespace Albelli.Business.Helper
             CreateMap<Order, OrderModel>();
             CreateMap<OrderItem, OrderItemModel>();
             CreateMap<ProductType, ProductTypeModel>();
-
-            CreateMap<OrderModel, GetOrderOutput>()
+         
+            CreateMap<Order, GetOrderOutput>()
                  .ForMember(dest => dest.OrderId, opt =>
                  {
                      opt.MapFrom(src => src.Id);
@@ -33,23 +33,19 @@ namespace Albelli.Business.Helper
                  {
                      opt.MapFrom(src => src.MinimumBinWidth);
                  })
-                  .ForMember(dest => dest.Items, opt =>
-                  {
-                      opt.MapFrom(src => src.Items);
-                  })
                  ;
 
-            CreateMap<OrderItemModel, OrderDetail>()
-                 .ForMember(dest => dest.Quantity, opt =>
-                 {
-                     opt.MapFrom(src => src.Quantity);
-                 })
-                 .ForMember(dest => dest.Product, opt =>
-                 {
-                     opt.MapFrom(src => src.ProductType.Name);
-                 })
-                 ;
+            CreateMap<OrderItem, OrderDetail>()
+                .ForMember(dest => dest.Product, opt =>
+                {
+                    opt.MapFrom(src => src.ProductType.Name);
+                })
+                .ForMember(dest => dest.Quantity, opt =>
+                {
+                    opt.MapFrom(src => src.Quantity);
+                })
+                ;
         }
-    
+
     }
 }

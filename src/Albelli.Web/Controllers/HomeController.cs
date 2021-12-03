@@ -3,6 +3,7 @@ using Albelli.Business.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading.Tasks;
 
 namespace Albelli.Web.Controllers
 {
@@ -27,19 +28,28 @@ namespace Albelli.Web.Controllers
         }
 
         [HttpGet("getOrder")]
-        public IActionResult GetOrder(int orderId)
+        public async Task<IActionResult> GetOrder(int orderId)
         {
-            var order = _orderApiService.GetOrder(orderId);
-            return Ok(order);
+            try
+            {
+                var order = await _orderApiService.GetOrder(orderId);
+                return Ok(order);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Operation failed in GetOrder method");
+                return Ok("Operation failed.");
+            }
+            
         }
 
         [HttpPost("submitOrder")]
-        public IActionResult SubmitOrder([FromBody] SubmitOrderInput model)
+        public async Task<IActionResult> SubmitOrder([FromBody] SubmitOrderInput model)
         {
             try
             {
                 if (!ModelState.IsValid) return NoContent();
-                var data = _orderApiService.SaveOrder(model);
+                var data = await _orderApiService.SaveOrder(model);
                 return Ok(new { message = data });
             }
             catch (Exception ex)

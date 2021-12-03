@@ -1,10 +1,11 @@
 ﻿using Albelli.Business.Models.Dto;
+using System.Threading.Tasks;
 
 namespace Albelli.Business.Services.Interfaces
 {
     public interface IOrderApiService
     {
-        public GetOrderOutput GetOrder(int orderId);
-        public SubmitOrderOutput SaveOrder(SubmitOrderInput model);
+        public Task<GetOrderOutput> GetOrder(int orderId);
+        public Task<SubmitOrderOutput> SaveOrder(SubmitOrderInput model);
     }
 }

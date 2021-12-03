@@ -1,14 +1,15 @@
 ﻿using Albelli.Business.Models;
+using Albelli.Business.Models.Dto;
+using Albelli.Data.Entities;
 using System.Collections.Generic;
-
+using System.Threading.Tasks;
 
 namespace Albelli.Business.Services.Interfaces
 {
     public interface IOrderDataService
     {
-        public OrderModel GetOrder(int orderId);
-        public OrderModel SaveOrder(OrderModel model);
-        public List<ProductTypeModel> GetProductTypes();
-        public bool SaveOrderItems(List<OrderItemModel> model);
+        public Task<GetOrderOutput> GetOrder(int orderId);
+        public Task<OrderModel> SaveOrder(OrderModel model);
+        public Task<List<ProductTypeModel>> GetProductTypes();
     }
 }

@@ -8,6 +8,10 @@ namespace Albelli.Business.Models.Dto
 {
     public class GetOrderOutput
     {
+        public GetOrderOutput()
+        {
+            Items = new List<OrderDetail>();
+        }
         public int OrderId { get; set; }
         public double MinimumBinWidth { get; set; }
         public List<OrderDetail> Items { get; set; }

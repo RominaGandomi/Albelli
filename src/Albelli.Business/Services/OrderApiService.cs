@@ -3,8 +3,10 @@ using Albelli.Business.Models;
 using Albelli.Business.Models.Dto;
 using Albelli.Business.Services.Interfaces;
 using AutoMapper;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Albelli.Business.Services
 {
@@ -19,51 +21,66 @@ namespace Albelli.Business.Services
             _orderDataService = orderDataService;
         }
 
-        public GetOrderOutput GetOrder(int orderId)
+        public async Task<GetOrderOutput> GetOrder(int orderId)
         {
-            var output = new GetOrderOutput();
-            var order = _orderDataService.GetOrder(orderId);
-            if (order == null) 
-                return null;
-
-            var details = _mapper.Map<List<OrderDetail>>(order.Items);
-            output.MinimumBinWidth = order.MinimumBinWidth;
-            output.OrderId = order.Id;
-            output.Items = details;
-            return output;
-        }
-        public SubmitOrderOutput SaveOrder(SubmitOrderInput model)
-        {
-            var output = new SubmitOrderOutput();
-
-
-            model = OrderHelper.MergeProducts(model);
-          
-            var products = _orderDataService.GetProductTypes();
-            var items = new List<OrderItemModel>();
-
-            var ordermodel = new OrderModel() {
-                MinimumBinWidth = OrderHelper.CalculateBinWidth(model, products) ,
-                Items=items
-            };
-            var order = _orderDataService.SaveOrder(ordermodel);
-
-
-            for (int i = 0; i < model.Items.Count; i++)
+            try
             {
-                items.Add(new OrderItemModel()
+                var output = await _orderDataService.GetOrder(orderId);
+                return output;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
+        }
+        public async Task<SubmitOrderOutput> SaveOrder(SubmitOrderInput model)
+        {
+            try
+            {
+                //Merge if multiple products has been inserted
+                model = OrderHelper.MergeProducts(model);
+
+                var products = await _orderDataService.GetProductTypes();
+
+                //Calculate the minimum bin width and OrderItems
+                var width = 0.0;
+                var items = new List<OrderItemModel>();
+
+                foreach (var item in model.Items)
+                {
+                    var product = products.FirstOrDefault(x => OrderHelper.NameBuilder(x.Name) == OrderHelper.NameBuilder(item.Product));
+                    if (product == null)
+                        continue;
+
+                    items.Add(new OrderItemModel()
+                    {
+                        ProductTypeId = product.Id,
+                        Quantity = item.Quantity
+                    });
+
+                    width += product.CalculateBin(item.Quantity);
+                }
+
+                var ordermodel = new OrderModel()
+                {
+                    MinimumBinWidth = width,
+                    Items = items
+                };
+
+                var order = await _orderDataService.SaveOrder(ordermodel);
+
+                return new SubmitOrderOutput()
                 {
                     OrderId = order.Id,
-                    ProductTypeId = products.First(x => OrderHelper.NameBuilder(x.Name) == OrderHelper.NameBuilder(model.Items[i].Product)).Id,
-                    Quantity = model.Items[i].Quantity
-                });
+                    MinimumBinWidth = order.MinimumBinWidth
+                };
             }
-            var orderItems = _orderDataService.SaveOrderItems(items);
-
-            output.OrderId = order.Id;
-            output.MinimumBinWidth = order.MinimumBinWidth;
-            return output;
+            catch (Exception)
+            {
+                throw;
+            }
         }
-       
+
     }
 }
